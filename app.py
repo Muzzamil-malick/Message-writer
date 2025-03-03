@@ -2,6 +2,11 @@ import streamlit as st
 import pandas as pd
 from io import StringIO
 
+# Function to clean column names
+def clean_column_names(df):
+    df.columns = df.columns.str.replace("\n", " ").str.strip().str.upper()  # Remove newlines and spaces
+    return df
+
 # Function to determine prefix based on SOURCE
 def get_prefix(source):
     if isinstance(source, str):
@@ -18,13 +23,13 @@ def format_row(row):
     id_code = row["IDCODE"].strip()
     location = f"*{row['DISTRICT'].strip()}, site= {row['SITE NAME'].strip()}*"
     collection_date = f"Collection Date: {row['DATE COLLECTION'].strip()}"
-    genetic_cluster = f"Genetic Cluster: *{row['Genetic cluster'].strip()}*"
-    closest_match = f"Closest Genetic Match: {row['Closest genetic match']}"
+    genetic_cluster = f"Genetic Cluster: *{row['GENETIC CLUSTER'].strip()}*"
+    closest_match = f"Closest Genetic Match: {row['CLOSEST GENETIC MATCH']}"
 
     return f"{lab_code}\n{id_code}\n{location}\n{collection_date}\n{genetic_cluster}\n{closest_match}"
 
 # Streamlit UI
-st.title("TEXT Formatter")
+st.title("Message Writer")
 
 st.sidebar.header("Input Data")
 st.sidebar.write("Paste your **tab-delimited** data below and click 'Convert'.")
@@ -38,7 +43,16 @@ if st.sidebar.button("Convert"):
         try:
             df = pd.read_csv(StringIO(data_input), sep="\t", dtype=str)
 
-            required_cols = ["SOURCE", "LABNO", "DISTRICT", "SITE NAME", "DATE COLLECTION", "Closest genetic match", "Genetic cluster", "IDCODE"]
+            # Clean column names
+            df = clean_column_names(df)
+
+            # Debugging: Show detected columns
+            st.write("Detected Columns:", df.columns.tolist())
+
+            # Required columns (make them uppercase for consistency)
+            required_cols = ["SOURCE", "LABNO", "DISTRICT", "SITE NAME", "DATE COLLECTION", "CLOSEST GENETIC MATCH", "GENETIC CLUSTER", "IDCODE"]
+
+            # Find missing columns
             missing_cols = [col for col in required_cols if col not in df.columns]
 
             if missing_cols:
@@ -58,4 +72,3 @@ if st.sidebar.button("Convert"):
             st.error(f"Error processing the data: {e}")
     else:
         st.warning("No data provided. Please paste data into the text area.")
-

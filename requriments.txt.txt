@@ -1,3 +1,2 @@
-shiny
-dplyr
-stringr
+streamlit
+pandas

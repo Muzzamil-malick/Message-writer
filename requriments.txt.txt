@@ -1,0 +1,3 @@
+shiny
+dplyr
+stringr
